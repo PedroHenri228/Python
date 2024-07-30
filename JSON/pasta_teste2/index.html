@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leitura de JSON</title>
+</head>
+<body>
+    <h1>Leitura de JSON com JavaScript</h1>
+    <script>
+        fetch('http://127.0.0.1:8000/dados.json')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                document.body.innerHTML += `<p>Nome: ${data.nome}</p>`;
+                document.body.innerHTML += `<p>Idade: ${data.idade}</p>`;
+                document.body.innerHTML += `<p>Causa: ${data.causa}</p>`;
+                document.body.innerHTML += `<p>Data: ${data.data}</p>`;
+            })
+            .catch(error => {
+                console.error('Erro ao ler o arquivo JSON:', error);
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enviar dados para API</title>
+</head>
+<body>
+    <input type="text" id="text01" placeholder="Texto 1">
+    <input type="text" id="text02" placeholder="Texto 2">
+    <button id="sendDataButton">Enviar Dados</button>
+    <button id="analyzeButton">Analisar Dados</button>
+    <img id="resultImage" src="static/barras.png" alt="Gráfico de Barras" style="display: none;">
+
+    <script>
+        document.getElementById('sendDataButton').addEventListener('click', () => {
+            var text01 = document.getElementById('text01').value;
+            var text02 = document.getElementById('text02').value;
+
+            const data = { text1: text01, text2: text02 }; // Dados que serão enviados
+
+            fetch('http://127.0.0.1:5000/api/data', {
+                method: 'POST', // Método de envio para o servidor
+                headers: {
+                    'Content-Type': 'application/json' // Indica que os dados serão enviados em formato JSON
+                },
+                body: JSON.stringify(data) // Converte os dados de JavaScript para JSON
+            })
+            .then(response => response.json()) // Converte a resposta do servidor para JavaScript
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('analyzeButton').addEventListener('click', () => {
+            fetch('http://127.0.0.1:5000/api/analyze')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.graph_path) {
+                        var resultImage = document.getElementById('resultImage');
+                        resultImage.src = 'http://127.0.0.1:5000/' + data.graph_path;
+                        resultImage.style.display = 'block';
+                    } else {
+                        console.error('Error:', data.error);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

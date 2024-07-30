@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manipular Arquivo Excel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+</head>
+<body>
+    <button id="fetchExcel">Fetch and Manipulate Excel</button>
+    <script>
+        document.getElementById('fetchExcel').addEventListener('click', function() {
+            fetch('http://127.0.0.1:5000/download-excel')
+                .then(response => response.arrayBuffer())
+                .then(data => {
+                    // Lendo o arquivo Excel
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    console.log(json);  // Manipular os dados conforme necessário
+
+                    // Exemplo de manipulação: adicionar uma nova linha
+                    json.push({ Nome: "Charlie", Idade: 28 });
+
+                    // Converter de volta para a planilha
+                    const newWorksheet = XLSX.utils.json_to_sheet(json);
+                    const newWorkbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, firstSheetName);
+
+                    // Criar um objeto Blob para o arquivo Excel
+                    const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
+                    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+
+                    // Criar um link para download
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'edited_dados.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => console.error('Error fetching and processing Excel file:', error));
+        });
+    </script>
+</body>
+</html>

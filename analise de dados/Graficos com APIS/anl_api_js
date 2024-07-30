@@ -1,0 +1,57 @@
+from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+
+app = Flask(__name__)
+CORS(app)  # Aplica CORS para todas as rotas
+
+# Lista global para armazenar dados recebidos
+dados_recebidos = []
+
+# Rota para receber dados via POST
+@app.route('/api/data', methods=['POST'])
+def receive_data():
+    global dados_recebidos
+    data = request.json
+    dados_recebidos.append(data)  # Armazena os dados recebidos na lista
+    return jsonify({"message": "Data received successfully", "data": data})
+
+# Rota para analisar dados e gerar gráfico
+@app.route('/api/analyze', methods=['GET'])
+def analyze_data():
+    global dados_recebidos
+    if not dados_recebidos:
+        return jsonify({"error": "No data received yet"})
+
+    # Criando DataFrame com os dados recebidos
+    df = pd.DataFrame(dados_recebidos)
+
+    # Verificando se os dados são numéricos
+    df['text2'] = pd.to_numeric(df['text2'], errors='coerce')
+
+    # Gerando o gráfico
+    df.plot(x='text1', y='text2', kind='bar')
+    plt.xlabel('Text1')  # Ajuste conforme necessário
+    plt.ylabel('Values')  # Ajuste conforme necessário
+    plt.title('Gráfico de Barras')
+
+    # Cria a pasta 'static' se ela não existir
+    os.makedirs('static', exist_ok=True)
+
+    # Salvar o gráfico como uma imagem
+    image_path = os.path.join('static', 'barras.png')
+    plt.savefig(image_path)
+    plt.close()  # Fecha a plotagem para evitar sobreposições futuras
+
+    # Retorna uma mensagem de sucesso e o caminho para o gráfico
+    return jsonify({"message": "Data analyzed and plotted", "graph_path": image_path})
+
+# Rota para servir a imagem
+@app.route('/static/<path:filename>')
+def serve_image(filename):
+    return send_file(os.path.join('static', filename))
+
+if __name__ == '__main__':
+    app.run(debug=True)

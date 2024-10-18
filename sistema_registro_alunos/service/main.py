@@ -1,9 +1,12 @@
 import sqlite3
+import os
 
 
 def connect():
-    conn = sqlite3.connect("db/alunos.db")
+    
+    conn = sqlite3.connect('aluno.db')
     return conn
+    
 
 
 def create_table():
@@ -21,7 +24,7 @@ def create_table():
             `data_nascimento` REAL NOT NULL,
             `endereco` TEXT NOT NULL,
             `curso` TEXT NOT NULL,
-            `foto` TEXT NOT NULL
+            `foto` TEXT NULL
         );
         """
     )
@@ -72,6 +75,28 @@ def delete_student(student_id):
     conn.commit()
     
     conn.close()
+
+def debug_sql():
+    conn = connect()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        '''
+            INSERT INTO alunos (nome, email, contato, sexo, data_nascimento, endereco, curso) 
+            VALUES (
+                'João Silva', 
+                'joao.silva@email.com', 
+                1234567890, 
+                'Masculino', 
+                '2000-05-15', 
+                'Rua das Flores, 123', 
+                'Engenharia'
+            );
+        '''
+    )
+    
+    conn.commit() 
+
 
 if __name__ == '__main__':
     create_table()

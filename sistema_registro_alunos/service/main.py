@@ -37,7 +37,7 @@ def insert_student(nome, email, contato, sexo, data_nascimento, endereco, curso)
 
     cursor.execute(
         '''
-        INSERT INTO alunos (name, email, contato, sexo, data_nascimento, endereco, curso) VALUES (?, ?, ?, ?, ?, ?, ?);
+        INSERT INTO alunos (nome, email, contato, sexo, data_nascimento, endereco, curso) VALUES (?, ?, ?, ?, ?, ?, ?);
         ''', (nome, email, contato, sexo, data_nascimento, endereco, curso)
     )
     

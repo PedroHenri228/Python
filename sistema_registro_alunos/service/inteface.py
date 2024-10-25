@@ -1,232 +1,131 @@
 import tkinter as tk
-from tkinter import ttk
-from main import *  
+from tkinter import ttk, messagebox
+from main import *
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.geometry("600x400")
-        
-        self.container = tk.Frame(self)
-        self.container.pack(fill="both", expand=True)
-        
-        self.show_frame(HomePage)
+        self.geometry("800x600")
+        self.title("Sistema de Registro de Alunos")
 
-    def show_frame(self, frame_class):
-        frame = frame_class(self.container, self)
-        frame.grid(row=0, column=0, sticky="nsew")
-        frame.tkraise()
+        create_table()
 
-class HomePage(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent)
+        self.top_frame = tk.Frame(self)
+        self.top_frame.pack(side=tk.TOP, fill="x", pady=10)
+
+        title_label = tk.Label(self.top_frame, text="Sistema de Registro de Alunos", font=("Helvetica", 16, "bold"))
+        title_label.pack(side=tk.LEFT, padx=20)
+
+        self.middle_frame = tk.Frame(self)
+        self.middle_frame.pack(side=tk.TOP, fill="both", expand=True, padx=20)
+
+
+        labels = ["Nome", "Email", "Telefone", "Sexo", "Data de nascimento", "Endereço", "Curso"]
+        self.entries = {}
+        for idx, label in enumerate(labels):
+            tk.Label(self.middle_frame, text=label).grid(row=idx, column=0, padx=10, pady=5)
+            entry = tk.Entry(self.middle_frame, width=30)
+            entry.grid(row=idx, column=1, padx=10, pady=5)
+            self.entries[label] = entry
         
-        self.tree = ttk.Treeview(self, columns=("ID", "Nome", "Email", "Contato", "Sexo", "Data Nascimento", "Endereço", "Curso"), show="headings")
+        self.entries['Sexo'] = ttk.Combobox(self.middle_frame, values=["Feminino", "Masculino"])
+        self.entries['Sexo'].grid(row=3, column=1, padx=10, pady=5)
+        
+        self.entries['Curso'] = ttk.Combobox(self.middle_frame, values=["Engenharia", "Medicina", "Direito"])
+        self.entries['Curso'].grid(row=6, column=1, padx=10, pady=5)
+
+        btn_frame = tk.Frame(self)
+        btn_frame.pack(side=tk.TOP, pady=10)
+
+        add_btn = tk.Button(btn_frame, text="Adicionar", command=self.add_student)
+        add_btn.pack(side=tk.LEFT, padx=10)
+
+        update_btn = tk.Button(btn_frame, text="Atualizar", command=self.update_student)
+        update_btn.pack(side=tk.LEFT, padx=10)
+
+        delete_btn = tk.Button(btn_frame, text="Deletar", command=self.delete_student)
+        delete_btn.pack(side=tk.LEFT, padx=10)
+
+        # Treeview (Tabela de alunos)
+        self.tree = ttk.Treeview(self, columns=("ID", "Nome", "Email", "Telefone", "Sexo", "Data", "Endereço", "Curso"), show="headings")
         self.tree.heading("ID", text="ID")
         self.tree.heading("Nome", text="Nome")
         self.tree.heading("Email", text="E-mail")
-        self.tree.heading("Contato", text="Contato")
+        self.tree.heading("Telefone", text="Telefone")
         self.tree.heading("Sexo", text="Sexo")
-        self.tree.heading("Data Nascimento", text="Data Nascimento")
+        self.tree.heading("Data", text="Data de Nascimento")
         self.tree.heading("Endereço", text="Endereço")
         self.tree.heading("Curso", text="Curso")
-
+        
         self.tree.column("ID", width=50)
         self.tree.column("Nome", width=100)
         self.tree.column("Email", width=100)
-        self.tree.column("Contato", width=100)
-        self.tree.column("Sexo", width=100)
-        self.tree.column("Data Nascimento", width=100)
-        self.tree.column("Endereço", width=100)
+        self.tree.column("Telefone", width=100)
+        self.tree.column("Sexo", width=50)
+        self.tree.column("Data", width=100)
+        self.tree.column("Endereço", width=150)
         self.tree.column("Curso", width=100)
-        
-        self.tree.pack(fill="both", expand=True)
-        
-        btn = tk.Button(self, text="Cadastrar Novo Aluno", 
-                        command=lambda: controller.show_frame(SecondPage))
-        btn.pack(pady=10)
-        
-        btn = tk.Button(self, text="Deletar Aluno", 
-                        command=lambda: controller.show_frame(ThirdPage))
-        btn.pack(pady=10)
-        
-        btn = tk.Button(self, text="Editar Aluno", 
-                        command=lambda: controller.show_frame(FourthPage))
-        btn.pack(pady=10)
 
-        self.get_students()
+        self.tree.pack(side=tk.BOTTOM, fill="both", expand=True, padx=20, pady=10)
+        
+        self.load_students()
 
-    def get_students(self):
-        students = get_all_students() 
-        
-        for row in self.tree.get_children():
-            self.tree.delete(row)
-        
-        for student in students:
-            self.tree.insert("", tk.END, values=student)  
+    def add_student(self):
+        nome = self.entries["Nome"].get()
+        email = self.entries["Email"].get()
+        contato = self.entries["Telefone"].get()
+        sexo = self.entries["Sexo"].get()
+        data_nascimento = self.entries["Data de nascimento"].get()
+        endereco = self.entries["Endereço"].get()
+        curso = self.entries["Curso"].get()
 
-class SecondPage(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent)
-        label = tk.Label(self, text="Cadastro de Alunos")
-        label.pack(pady=10)
+        insert_student(nome, email, contato, sexo, data_nascimento, endereco, curso)
         
-        btn = tk.Button(self, text="Voltar para tela inicial", 
-                        command=lambda: controller.show_frame(HomePage))
-        btn.pack()
-        
-        label_nome = tk.Label(self, text="Nome:")
-        label_nome.pack(pady=5)
-        self.nome_student = tk.Entry(self, width=55)
-        self.nome_student.pack(pady=5)
-        
-        label_email = tk.Label(self, text="E-mail:")
-        label_email.pack(pady=5)
-        self.email_student = tk.Entry(self, width=55)
-        self.email_student.pack(pady=5)
-        
-        label_contato = tk.Label(self, text="Contato:")
-        label_contato.pack(pady=5)
-        self.contato_student = tk.Entry(self, width=55)
-        self.contato_student.pack(pady=5)
-        
-        label_sexo = tk.Label(self, text="Sexo:")
-        label_sexo.pack(pady=5)
-        self.sexo_student = tk.Entry(self, width=55)
-        self.sexo_student.pack(pady=5)
-        
-        label_nascimento = tk.Label(self, text="Data de Nascimento:")
-        label_nascimento.pack(pady=5)
-        self.nasc_student = tk.Entry(self, width=55)
-        self.nasc_student.pack(pady=5)
-        
-        label_endereco = tk.Label(self, text="Endereço:")
-        label_endereco.pack(pady=5)
-        self.endereco_student = tk.Entry(self, width=55)
-        self.endereco_student.pack(pady=5)
-        
-        label_curso = tk.Label(self, text="Curso:")
-        label_curso.pack(pady=5)
-        self.curso_student = tk.Entry(self, width=55)
-        self.curso_student.pack(pady=5)
 
-        btn_insert = tk.Button(self, text="Inserir Estudante", command=self.insert)
-        btn_insert.pack(pady=10)
+        self.load_students()
 
-    def insert(self):
-        nome = self.nome_student.get()
-        email = self.email_student.get()
-        contato = self.contato_student.get()
-        sexo = self.sexo_student.get()
-        nasc = self.nasc_student.get()
-        endereco = self.endereco_student.get()
-        curso = self.curso_student.get()
+    def update_student(self):
+        selected_item = self.tree.focus()
+        if not selected_item:
+            messagebox.showwarning("Erro", "Selecione um aluno para atualizar.")
+            return
         
-        insert_student(nome, email, contato, sexo, nasc, endereco, curso)  
+        student_id = self.tree.item(selected_item, 'values')[0]
+        nome = self.entries["Nome"].get()
+        email = self.entries["Email"].get()
+        contato = self.entries["Telefone"].get()
+        sexo = self.entries["Sexo"].get()
+        data_nascimento = self.entries["Data de nascimento"].get()
+        endereco = self.entries["Endereço"].get()
+        curso = self.entries["Curso"].get()
 
-        self.nome_student.delete(0, tk.END) 
-        self.email_student.delete(0, tk.END) 
-        self.contato_student.delete(0, tk.END) 
-        self.sexo_student.delete(0, tk.END) 
-        self.nasc_student.delete(0, tk.END) 
-        self.endereco_student.delete(0, tk.END) 
-        self.curso_student.delete(0, tk.END) 
-
-class ThirdPage(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent)
-        label = tk.Label(self, text="Excluir Aluno")
-        label.pack(pady=10)
-        btn = tk.Button(self, text="Voltar para tela inicial", 
-                        command=lambda: controller.show_frame(HomePage))
-        btn.pack()
-
-        label_id = tk.Label(self, text="Identificação:")
-        label_id.pack(pady=5)
-        self.id_student = tk.Entry(self, width=55)
-        self.id_student.pack(pady=5)
+        update_student(student_id, nome, email, contato, sexo, data_nascimento, endereco, curso)
         
-        btn_insert = tk.Button(self, text="Deletar Estudante", command=self.delete)
-        btn_insert.pack(pady=10)
-        
-    def delete(self):
-        student_id = self.id_student.get()
+
+        self.load_students()
+
+    def delete_student(self):
+        selected_item = self.tree.focus()
+        if not selected_item:
+            messagebox.showwarning("Erro", "Selecione um aluno para deletar.")
+            return
+
+        student_id = self.tree.item(selected_item, 'values')[0]
+
+
         delete_student(student_id)
-        self.id_student.delete(0, tk.END) 
 
-class FourthPage(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent)
-        label = tk.Label(self, text="Editar Aluno")
-        label.pack(pady=10)
+        self.load_students()
+
+
+    def load_students(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
         
-        btn = tk.Button(self, text="Voltar para tela inicial", 
-                        command=lambda: controller.show_frame(HomePage))
-        btn.pack()
-        
-        label_id = tk.Label(self, text="ID do Aluno:")
-        label_id.pack(pady=5)
-        self.id_student = tk.Entry(self, width=55)
-        self.id_student.pack(pady=5)
-        
-        label_nome = tk.Label(self, text="Novo Nome:")
-        label_nome.pack(pady=5)
-        self.nome_student = tk.Entry(self, width=55)
-        self.nome_student.pack(pady=5)
+        students = get_all_students()
+        for student in students:
+            self.tree.insert("", "end", values=student)
 
-        label_email = tk.Label(self, text="Novo E-mail:")
-        label_email.pack(pady=5)
-        self.email_student = tk.Entry(self, width=55)
-        self.email_student.pack(pady=5)
-
-        label_contato = tk.Label(self, text="Novo Contato:")
-        label_contato.pack(pady=5)
-        self.contato_student = tk.Entry(self, width=55)
-        self.contato_student.pack(pady=5)
-
-        label_sexo = tk.Label(self, text="Novo Sexo:")
-        label_sexo.pack(pady=5)
-        self.sexo_student = tk.Entry(self, width=55)
-        self.sexo_student.pack(pady=5)
-
-        label_nascimento = tk.Label(self, text="Nova Data de Nascimento:")
-        label_nascimento.pack(pady=5)
-        self.nasc_student = tk.Entry(self, width=55)
-        self.nasc_student.pack(pady=5)
-
-        label_endereco = tk.Label(self, text="Novo Endereço:")
-        label_endereco.pack(pady=5)
-        self.endereco_student = tk.Entry(self, width=55)
-        self.endereco_student.pack(pady=5)
-
-        label_curso = tk.Label(self, text="Novo Curso:")
-        label_curso.pack(pady=5)
-        self.curso_student = tk.Entry(self, width=55)
-        self.curso_student.pack(pady=5)
-
-        btn_update = tk.Button(self, text="Atualizar Aluno", command=self.update)
-        btn_update.pack(pady=10)
-
-    def update(self):
-        student_id = self.id_student.get()
-        nome = self.nome_student.get()
-        email = self.email_student.get()
-        contato = self.contato_student.get()
-        sexo = self.sexo_student.get()
-        nasc = self.nasc_student.get()
-        endereco = self.endereco_student.get()
-        curso = self.curso_student.get()
-
-        update_student(student_id, nome, email, contato, sexo, nasc, endereco, curso)
-
-        self.id_student.delete(0, tk.END)
-        self.nome_student.delete(0, tk.END)
-        self.email_student.delete(0, tk.END)
-        self.contato_student.delete(0, tk.END)
-        self.sexo_student.delete(0, tk.END)
-        self.nasc_student.delete(0, tk.END)
-        self.endereco_student.delete(0, tk.END)
-        self.curso_student.delete(0, tk.END)
 
 if __name__ == "__main__":
     app = App()

@@ -113,7 +113,3 @@ class SubscriptionService:
         plt.plot([1, 2], [5, 6])
         plt.show()
 
-
-ss = SubscriptionService(engine)
-
-print(ss.gen_chart())

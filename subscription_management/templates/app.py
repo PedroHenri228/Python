@@ -1,7 +1,7 @@
 import __init__
 from views.view import SubscriptionService
 from models.database import engine
-from models.model import Subscription
+from models.model import Subscription, Payments
 from datetime import datetime
 from decimal import Decimal
 class UI:
@@ -18,7 +18,8 @@ class UI:
             [2] -> Remover assinatura
             [3] -> Valor total
             [4] -> Gastos últimos 12 meses
-            [5] -> Sair
+            [5] -> Pagar Assinatura
+            [6] -> Sair
             ''')
             
             choice = int(input('Escolha uma opção: '))
@@ -34,6 +35,9 @@ class UI:
                 
             elif choice == 4:
                  self.subscription_service.gen_chart()
+                 
+            elif choice == 5:
+                self.payment_signature()
                  
             else:
                 break
@@ -66,6 +70,29 @@ class UI:
                 
     def total_value(self):
         print(f'Mensalidade Total das Assinaturas: {self.subscription_service.total_value()}')
+
+    def payment_signature(self):
+        subscriptions = self.subscription_service.list_all()
+
+        print("Escolha a assinatura para pagar: ")
+
+        for subscription in subscriptions:
+            print(f"ID: {subscription.id} ,\nEmpresa: {subscription.empresa},\nValor: {subscription.valor}")
+
+        subscription_id = int(input("Digite o ID da assinatura: "))
+
+        subscription = next((s for s in subscriptions if s.id == subscription_id), None)
+
+        if not subscription:
+            print("Assinatura não encontrada!")
+            return
+
+        sucesso = self.subscription_service.pay(subscription)
+
+        if sucesso:
+            print("Pagamento realizado com sucesso!")
+        else:
+            print("Erro ao realizar o pagamento. Verifique os dados informados.")
 
         
 if __name__ == "__main__":

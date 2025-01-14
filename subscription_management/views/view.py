@@ -38,25 +38,28 @@ class SubscriptionService:
 
     def pay(self, subscription: Subscription):
         with Session(self.engine) as session:
+            # Verifica se já existe um pagamento para este mês
             statement = (
                 select(Payments)
-                .join(Subscription)
-                .where(Subscription.empresa == subscription.empresa)
+                .where(Payments.subscription_id == subscription.id)
+                .where(Payments.date.between(date.today().replace(day=1), date.today()))
             )
-            result = session.exec(statement).all()
+            existing_payment = session.exec(statement).first()
 
-            if self._has_pay(result):
+            if existing_payment:
                 question = input(
-                    "Essa conta ja foi paga este mês, deseja pagar novamente ? Y ou N: "
+                    "Essa conta já foi paga este mês. Deseja pagar novamente? (Y/N): "
                 )
+                if question.strip().upper() != "Y":
+                    return False
 
-                if not question.upper() == "Y":
-                    return None
-
-            pay = Payments(subscription_id=subscription.id, date=date.today())
-
-            session.add(pay)
+            # Registra o pagamento
+            new_payment = Payments(subscription_id=subscription.id, date=date.today())
+            session.add(new_payment)
             session.commit()
+            print(f"Pagamento registrado para a assinatura: {subscription.empresa}")
+            return True
+
 
     def total_value(self):
         with Session(self.engine) as session:
